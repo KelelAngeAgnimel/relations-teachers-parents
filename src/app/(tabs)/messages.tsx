@@ -1,48 +1,37 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
-
-const CONVERSATIONS = [
-  {
-    id: '1',
-    nom: 'Kouassi Aya',
-    dernierMessage: "D'accord, à demain 14h !",
-    heure: '10:24',
-  },
-  {
-    id: '2',
-    nom: 'Traoré Ibrahim',
-    dernierMessage: "Merci pour le cours d'aujourd'hui",
-    heure: 'Hier',
-  },
-  {
-    id: '3',
-    nom: 'Koffi Marie',
-    dernierMessage: 'Vous êtes disponible mercredi ?',
-    heure: 'Lun',
-  },
-];
+import { CONVERSATIONS } from '@/data/conversations';
+import { PROFESSEURS } from '@/data/professeurs';
 
 export default function MessagesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScreenHeader title="Messages" />
       <ScrollView contentContainerStyle={styles.list}>
-        {CONVERSATIONS.map((conv) => (
-          <View key={conv.id} style={styles.card}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{conv.nom.charAt(0)}</Text>
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.nom}>{conv.nom}</Text>
-              <Text style={styles.message} numberOfLines={1}>
-                {conv.dernierMessage}
-              </Text>
-            </View>
-            <Text style={styles.heure}>{conv.heure}</Text>
-          </View>
-        ))}
+        {CONVERSATIONS.map((conv) => {
+          const professeur = PROFESSEURS.find((prof) => prof.id === conv.id);
+          if (!professeur) return null;
+          const dernierMessage = conv.messages[conv.messages.length - 1];
+          return (
+            <Link key={conv.id} href={`/conversation/${conv.id}`} asChild>
+              <Pressable style={styles.card}>
+                <View style={[styles.avatar, { backgroundColor: professeur.couleur }]}>
+                  <Text style={styles.avatarText}>{professeur.nom.charAt(0)}</Text>
+                </View>
+                <View style={styles.textContainer}>
+                  <Text style={styles.nom}>{professeur.nom}</Text>
+                  <Text style={styles.message} numberOfLines={1}>
+                    {dernierMessage.texte}
+                  </Text>
+                </View>
+                <Text style={styles.heure}>{dernierMessage.heure}</Text>
+              </Pressable>
+            </Link>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -71,14 +60,13 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F5E6DE',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#B5502D',
+    color: '#FFFFFF',
   },
   textContainer: {
     flex: 1,

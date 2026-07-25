@@ -1,24 +1,42 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { NIVEAUX, ZONES } from '@/data/options';
 import { PROFESSEURS } from '@/data/professeurs';
 
 const MATIERES = ['Maths', 'Français', 'Physique', 'Anglais'];
 
 export default function RechercherScreen() {
   const [recherche, setRecherche] = useState('');
+  const [filtreVisible, setFiltreVisible] = useState(false);
+  const [filtreZone, setFiltreZone] = useState<string | null>(null);
+  const [filtreNiveau, setFiltreNiveau] = useState<string | null>(null);
+  const [filtrePrixMax, setFiltrePrixMax] = useState('');
+
+  const filtresActifs = filtreZone !== null || filtreNiveau !== null || filtrePrixMax.trim() !== '';
 
   const texteRecherche = recherche.trim().toLowerCase();
   const professeursFiltres = PROFESSEURS.filter((prof) => {
-    if (!texteRecherche) return true;
-    return (
-      prof.nom.toLowerCase().includes(texteRecherche) ||
-      prof.matiere.toLowerCase().includes(texteRecherche)
-    );
+    if (texteRecherche) {
+      const correspond =
+        prof.nom.toLowerCase().includes(texteRecherche) ||
+        prof.matiere.toLowerCase().includes(texteRecherche);
+      if (!correspond) return false;
+    }
+    if (filtreZone && prof.ville !== filtreZone) return false;
+    if (filtreNiveau && !prof.niveau.includes(filtreNiveau)) return false;
+    if (filtrePrixMax.trim() && prof.tarif > Number(filtrePrixMax)) return false;
+    return true;
   });
+
+  function reinitialiserFiltres() {
+    setFiltreZone(null);
+    setFiltreNiveau(null);
+    setFiltrePrixMax('');
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -71,11 +89,82 @@ export default function RechercherScreen() {
 
       <View style={styles.resultatsRow}>
         <Text style={styles.resultatsText}>{professeursFiltres.length} profs à proximité</Text>
-        <Pressable style={styles.filtrerButton}>
+        <Pressable style={styles.filtrerButton} onPress={() => setFiltreVisible(true)}>
           <Ionicons name="options-outline" size={16} color="#B5502D" />
           <Text style={styles.filtrerText}>Filtrer</Text>
+          {filtresActifs && <View style={styles.filtrePoint} />}
         </Pressable>
       </View>
+
+      <Modal
+        visible={filtreVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setFiltreVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitre}>Filtres</Text>
+              <Pressable onPress={() => setFiltreVisible(false)}>
+                <Ionicons name="close" size={24} color="#1A1D23" />
+              </Pressable>
+            </View>
+
+            <Text style={styles.modalLabel}>Zone</Text>
+            <View style={styles.chipsWrap}>
+              {ZONES.map((z) => {
+                const selectionnee = z === filtreZone;
+                return (
+                  <Pressable
+                    key={z}
+                    style={[styles.chip, selectionnee && styles.chipSelected]}
+                    onPress={() => setFiltreZone(selectionnee ? null : z)}>
+                    <Text style={[styles.chipText, selectionnee && styles.chipTextSelected]}>
+                      {z}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Text style={styles.modalLabel}>Niveau</Text>
+            <View style={styles.chipsWrap}>
+              {NIVEAUX.map((n) => {
+                const selectionne = n === filtreNiveau;
+                return (
+                  <Pressable
+                    key={n}
+                    style={[styles.chip, selectionne && styles.chipSelected]}
+                    onPress={() => setFiltreNiveau(selectionne ? null : n)}>
+                    <Text style={[styles.chipText, selectionne && styles.chipTextSelected]}>
+                      {n}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Text style={styles.modalLabel}>Prix maximum (FCFA/h)</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Ex : 3000"
+              placeholderTextColor="#8A8F98"
+              keyboardType="numeric"
+              value={filtrePrixMax}
+              onChangeText={setFiltrePrixMax}
+            />
+
+            <View style={styles.modalActions}>
+              <Pressable onPress={reinitialiserFiltres}>
+                <Text style={styles.modalReinitialiser}>Réinitialiser</Text>
+              </Pressable>
+              <Pressable style={styles.modalAppliquer} onPress={() => setFiltreVisible(false)}>
+                <Text style={styles.modalAppliquerText}>Appliquer</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
         {professeursFiltres.length === 0 && (
@@ -184,6 +273,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 8,
   },
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   chip: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
@@ -224,6 +318,73 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#B5502D',
+  },
+  filtrePoint: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#B5502D',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    gap: 12,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  modalTitre: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1D23',
+  },
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1D23',
+    marginTop: 4,
+  },
+  modalInput: {
+    backgroundColor: '#F5F7FA',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    fontSize: 15,
+    color: '#1A1D23',
+    borderWidth: 1,
+    borderColor: '#E0E1E6',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  modalReinitialiser: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666B75',
+  },
+  modalAppliquer: {
+    backgroundColor: '#B5502D',
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  modalAppliquerText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 15,
   },
   list: {
     flex: 1,

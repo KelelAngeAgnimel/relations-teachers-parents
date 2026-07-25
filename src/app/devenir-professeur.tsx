@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { NIVEAUX, ZONES } from '@/data/options';
+
 const MATIERES = ['Maths', 'Français', 'Anglais', 'Physique-Chimie', 'SVT'];
-const NIVEAUX = ['Primaire', 'Collège', 'Lycée', 'Supérieur'];
-const ZONES = ['Cocody', 'Marcory', 'Yopougon', 'Abobo', 'Treichville', 'Plateau'];
+const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 export default function DevenirProfesseurScreen() {
   const router = useRouter();
@@ -22,17 +23,29 @@ export default function DevenirProfesseurScreen() {
   const [niveaux, setNiveaux] = useState<string[]>([]);
   const [tarif, setTarif] = useState('');
   const [zone, setZone] = useState<string | null>(null);
+  const [joursDispo, setJoursDispo] = useState<string[]>([]);
   const [bio, setBio] = useState('');
 
   const [pieceIdentiteAjoutee, setPieceIdentiteAjoutee] = useState(false);
   const [diplomeAjoute, setDiplomeAjoute] = useState(false);
 
   const etape1Valide = nom.trim() !== '' && email.trim() !== '' && telephone.trim() !== '' && motDePasse.length >= 6;
-  const etape2Valide = matiere !== null && niveaux.length > 0 && tarif.trim() !== '' && zone !== null;
+  const etape2Valide =
+    matiere !== null &&
+    niveaux.length > 0 &&
+    tarif.trim() !== '' &&
+    zone !== null &&
+    joursDispo.length > 0;
 
   function toggleNiveau(niveau: string) {
     setNiveaux((actuels) =>
       actuels.includes(niveau) ? actuels.filter((n) => n !== niveau) : [...actuels, niveau],
+    );
+  }
+
+  function toggleJour(jour: string) {
+    setJoursDispo((actuels) =>
+      actuels.includes(jour) ? actuels.filter((j) => j !== jour) : [...actuels, jour],
     );
   }
 
@@ -201,6 +214,25 @@ export default function DevenirProfesseurScreen() {
                       onPress={() => setZone(z)}>
                       <Text style={[styles.chipText, selectionnee && styles.chipTextSelectionne]}>
                         {z}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.champ}>
+              <Text style={styles.label}>Disponibilités</Text>
+              <View style={styles.chipsWrap}>
+                {JOURS.map((jour) => {
+                  const selectionne = joursDispo.includes(jour);
+                  return (
+                    <Pressable
+                      key={jour}
+                      style={[styles.chip, selectionne && styles.chipSelectionne]}
+                      onPress={() => toggleJour(jour)}>
+                      <Text style={[styles.chipText, selectionne && styles.chipTextSelectionne]}>
+                        {jour}
                       </Text>
                     </Pressable>
                   );
