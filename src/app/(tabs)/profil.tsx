@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,10 +7,11 @@ import { ScreenHeader } from '@/components/screen-header';
 
 const MENU = [
   { id: '1', label: 'Modifier le profil', icone: 'person-outline' },
-  { id: '2', label: 'Mes cours', icone: 'book-outline' },
-  { id: '3', label: 'Paramètres', icone: 'settings-outline' },
-  { id: '4', label: 'Aide', icone: 'help-circle-outline' },
-  { id: '5', label: 'Déconnexion', icone: 'log-out-outline' },
+  { id: '2', label: 'Devenir professeur', icone: 'school-outline', route: '/devenir-professeur' },
+  { id: '3', label: 'Mes cours', icone: 'book-outline' },
+  { id: '4', label: 'Paramètres', icone: 'settings-outline' },
+  { id: '5', label: 'Aide', icone: 'help-circle-outline' },
+  { id: '6', label: 'Déconnexion', icone: 'log-out-outline' },
 ] as const;
 
 export default function ProfilScreen() {
@@ -26,13 +28,27 @@ export default function ProfilScreen() {
         </View>
 
         <View style={styles.menu}>
-          {MENU.map((item) => (
-            <Pressable key={item.id} style={styles.menuItem}>
-              <Ionicons name={item.icone} size={20} color="#B5502D" />
-              <Text style={styles.menuLabel}>{item.label}</Text>
-              <Ionicons name="chevron-forward" size={18} color="#C0C4CC" />
-            </Pressable>
-          ))}
+          {MENU.map((item) => {
+            const contenu = (
+              <>
+                <Ionicons name={item.icone} size={20} color="#B5502D" />
+                <Text style={styles.menuLabel}>{item.label}</Text>
+                <Ionicons name="chevron-forward" size={18} color="#C0C4CC" />
+              </>
+            );
+            if ('route' in item) {
+              return (
+                <Link key={item.id} href={item.route} asChild>
+                  <Pressable style={styles.menuItem}>{contenu}</Pressable>
+                </Link>
+              );
+            }
+            return (
+              <Pressable key={item.id} style={styles.menuItem}>
+                {contenu}
+              </Pressable>
+            );
+          })}
         </View>
       </ScrollView>
     </SafeAreaView>
