@@ -1,17 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
 
 const MENU = [
-  { id: '1', label: 'Modifier le profil', icone: 'person-outline' },
-  { id: '2', label: 'Devenir professeur', icone: 'school-outline', route: '/devenir-professeur' },
-  { id: '3', label: 'Mes cours', icone: 'book-outline' },
-  { id: '4', label: 'Paramètres', icone: 'settings-outline' },
-  { id: '5', label: 'Aide', icone: 'help-circle-outline' },
-  { id: '6', label: 'Déconnexion', icone: 'log-out-outline' },
+  { id: '1', label: 'Modifier le profil', icone: 'person-outline', bientot: true },
+  { id: '2', label: 'Mes favoris', icone: 'heart-outline', route: '/mes-favoris' },
+  { id: '3', label: 'Devenir professeur', icone: 'school-outline', route: '/devenir-professeur' },
+  { id: '4', label: 'Mes cours', icone: 'book-outline', bientot: true },
+  { id: '5', label: 'Paramètres', icone: 'settings-outline', bientot: true },
+  { id: '6', label: 'Aide', icone: 'help-circle-outline', bientot: true },
+  { id: '7', label: 'Déconnexion', icone: 'log-out-outline' },
 ] as const;
 
 export default function ProfilScreen() {
@@ -41,6 +42,18 @@ export default function ProfilScreen() {
                 <Link key={item.id} href={item.route} asChild>
                   <Pressable style={styles.menuItem}>{contenu}</Pressable>
                 </Link>
+              );
+            }
+            if ('bientot' in item) {
+              return (
+                <Pressable
+                  key={item.id}
+                  style={styles.menuItem}
+                  onPress={() =>
+                    Alert.alert('Bientôt disponible', `« ${item.label} » arrive dans une prochaine étape.`)
+                  }>
+                  {contenu}
+                </Pressable>
               );
             }
             return (

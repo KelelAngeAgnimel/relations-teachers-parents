@@ -10,6 +10,7 @@ export default function RootLayout() {
       <Stack.Screen name="avis/[id]" />
       <Stack.Screen name="devenir-professeur" />
       <Stack.Screen name="conversation/[id]" />
+      <Stack.Screen name="mes-favoris" />
     </Stack>
   );
 }

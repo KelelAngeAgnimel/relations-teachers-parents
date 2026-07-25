@@ -1,14 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { estFavori, toggleFavori } from '@/data/favoris';
 import { PROFESSEURS } from '@/data/professeurs';
 
 export default function ProfesseurScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const professeur = PROFESSEURS.find((prof) => prof.id === id);
+  const [favori, setFavori] = useState(() => (professeur ? estFavori(professeur.id) : false));
+
+  function handleToggleFavori() {
+    if (!professeur) return;
+    toggleFavori(professeur.id);
+    setFavori((actuel) => !actuel);
+  }
 
   if (!professeur) {
     return (
@@ -32,7 +41,13 @@ export default function ProfesseurScreen() {
         <Pressable onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </Pressable>
-        <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
+        <Pressable onPress={handleToggleFavori}>
+          <Ionicons
+            name={favori ? 'heart' : 'heart-outline'}
+            size={24}
+            color={favori ? '#FF4D4D' : '#FFFFFF'}
+          />
+        </Pressable>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
